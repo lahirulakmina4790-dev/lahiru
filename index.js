@@ -6,8 +6,6 @@ const {
     getContentType,
     fetchLatestBaileysVersion,
     Browsers,
-    // ⚠️ Added for loadMessage functionality ⚠️
-    WAMessageKey,
 } = require('@whiskeysockets/baileys');
 
 const fs = require('fs');
@@ -18,8 +16,7 @@ const path = require('path');
 const qrcode = require('qrcode-terminal');
 
 const config = require('./config');
-// ⚠️ Updated to use downloadContentFromMessage from baileys for safety
-const { sms } = require('./lib/msg'); 
+const { sms } = require('./lib/msg'); // Note: Assuming downloadMediaMessage is no longer imported here
 const {
     getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson
 } = require('./lib/functions');
@@ -81,39 +78,25 @@ async function connectToWA() {
         generateHighQualityLinkPreview: true,
     });
 
-    // ⚠️ FIX: loadMessage functionality added to zanta object
+    // 🔑 FINAL FIX: loadMessage functionality added to zanta object using getMessages
     zanta.loadMessage = async (jid, id) => {
         try {
-            const msgKey = { remoteJid: jid, id: id, fromMe: false };
-            const fullMessage = await zanta.relayMessage(jid, {
-                extendedTextMessage: {
-                    text: '',
-                    contextInfo: {
-                        externalAdReply: {
-                            body: '',
-                            mediaType: 1,
-                            renderLargerThumbnail: true,
-                            showAdAttribution: true,
-                            sourceUrl: '',
-                            title: '',
-                            thumbnail: Buffer.alloc(0),
-                            mediaUrl: '',
-                            mentionedJid: [zanta.user.id],
-                        },
-                        stanzaId: id,
-                        participant: jid,
-                        quotedMessage: fullMessage ? fullMessage.message : null,
-                    },
-                },
-            }, { messageId: id, userJid: jid });
-            return fullMessage;
+            // Use getMessages to fetch the required single message by ID
+            const messages = await zanta.getMessages(jid, {
+                limit: 1,
+                messages: [{ id: id }]
+            });
+
+            if (messages.length > 0) {
+                return messages[0];
+            }
+            return null; // Return null if message is not found
         } catch (error) {
-            // Fallback for cases where relayMessage fails (e.g., deleted message)
-            console.error("zanta.loadMessage fallback failed:", error);
+            console.error("zanta.loadMessage failed in core:", error);
             return null;
         }
     };
-    // ⚠️ END FIX
+    // 🔑 END FIX
 
     zanta.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
@@ -180,16 +163,16 @@ async function connectToWA() {
 
         const reply = (text) => zanta.sendMessage(from, { text }, { quoted: mek });
         
-        // ⚠️ STATUS MEDIA FIX - Core Logic Injection ⚠️
+        // 🔑 FINAL STATUS MEDIA FIX - Core Logic Injection 🔑
         const quotedMsg = mek.message.extendedTextMessage?.contextInfo?.quotedMessage;
         const quotedJid = mek.message.extendedTextMessage?.contextInfo?.remoteJid;
         const quotedID = mek.message.extendedTextMessage?.contextInfo?.stanzaId;
 
-        // 1. Check if it's a reply to a Status (Status replies are sent to the Bot as regular messages)
+        // 1. Check if it's a reply to a Status
         if (quotedMsg && quotedJid === 'status@broadcast' && quotedID) {
             // 2. Load the original status message to get the Media Key
             const fullStatusMessage = await zanta.loadMessage(
-                'status@broadcast', // JID is always status@broadcast for status messages
+                'status@broadcast', 
                 quotedID 
             );
 
@@ -201,19 +184,10 @@ async function connectToWA() {
                 
                 // 4. Inject the full message object into the 'quoted' object (mek)
                 // This makes the crucial 'mediaKey' available for the save.js plugin.
-                mek.quoted.message = innerMessage; // Assuming sms() creates mek.quoted from quoted message part
-                // Since sms(zanta, mek) runs before, we must manually update the full quoted message data
-                // We use the raw mek object and adjust m.quoted (if m.quoted exists)
-                
-                // If you use m.quoted inside save.js, you must update m:
-                // m.quoted = sms(zanta, fullStatusMessage); // This depends on how sms works
-                
-                // For simplicity, we assume save.js uses mek.quoted.message
-                // We inject the entire fetched message structure (which contains the key) back into mek.quoted
-                mek.quoted.message = innerMessage; // This is the actual data needed
+                mek.quoted.message = innerMessage; 
             }
         }
-        // ⚠️ END STATUS MEDIA FIX ⚠️
+        // 🔑 END STATUS MEDIA FIX 🔑
 
 
         if (isCmd) {
