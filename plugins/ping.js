@@ -18,7 +18,7 @@ cmd(
         pattern: "ping",
         react: "⏱️",
         desc: "Check the bot's response time and display system information with an image.",
-        category: "misc",
+        category: "main",
         filename: __filename,
     },
     async (
