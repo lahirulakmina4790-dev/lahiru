@@ -43,7 +43,7 @@ cmd(
         from,
         {
           image: {
-            url: "/mnt/data/A_digital_illustration_features_a_promotional_grap.png"
+            url: "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/ChatGPT%20Image%20Nov%2021,%202025,%2001_49_53%20AM.png?raw=true"
           },
           caption: menuText.trim(),
         },
@@ -56,3 +56,4 @@ cmd(
     }
   }
 );
+
