@@ -1,22 +1,44 @@
 const { cmd, commands } = require("../command");
 
-const checkAdminRights = (reply, isGroup, isBotAdmins, isAdmins) => {
+const checkAdminRightsAndUpdate = async (zanta, from, reply, isGroup, m) => {
     if (!isGroup) {
         reply("*This command can only be used in a Group!* 🙁");
         return false;
     }
-    if (!isBotAdmins) {
-        reply("*I need to be an Admin in this group to use this command!* 🤖❌");
+
+    // --- 🤖 Bot Admin Status එක නැවත Fetch කර තහවුරු කිරීම ---
+    try {
+        let groupMeta = await zanta.groupMetadata(from);
+        const botJid = zanta.user.id;
+        const senderJid = m.sender; 
+        
+        const admins = groupMeta.participants.filter(p => p.admin !== null).map(p => p.id);
+        const isBotAdminNew = admins.includes(botJid);
+        const isUserAdminNew = admins.includes(senderJid); // මෙය Invite/Link වලට අත්‍යවශ්‍ය නැතත්, Mute/Unmute වලට අවශ්‍යයි
+
+        if (!isBotAdminNew) {
+            reply("*I need to be an Admin in this group to use this command!* 🤖❌");
+            return false;
+        }
+        
+        // Mute/Unmute වලදී User Admin වීම අත්‍යවශ්‍යයි.
+        if (m.command === 'mute' || m.command === 'unmute' || m.command === 'open' || m.command === 'close') {
+             if (!isUserAdminNew) {
+                 reply("*You must be an Admin to change Group Settings!* 👮‍♂️❌");
+                 return false;
+             }
+        }
+
+        return true; 
+        
+    } catch (e) {
+        console.error("Error fetching Group Metadata for Admin check:", e);
+        reply("*Error:* Failed to check admin status. Please try again. 😔");
         return false;
     }
-    if (!isAdmins) {
-        reply("*You must be an Admin to change Group Settings!* 👮‍♂️❌");
-        return false;
-    }
-    return true;
 };
 
-// --- MUTE/CLOSE COMMAND (Only Admins Can Send Messages) ---
+// --- MUTE/CLOSE COMMAND ---
 cmd(
   {
     pattern: "mute",
@@ -26,15 +48,13 @@ cmd(
     category: "group",
     filename: __filename,
   },
-  async (zanta, mek, m, { from, reply, isGroup, isBotAdmins, isAdmins }) => {
-    try {
-      if (!checkAdminRights(reply, isGroup, isBotAdmins, isAdmins)) return;
+  async (zanta, mek, m, { from, reply, isGroup, isAdmins }) => {
+    // Admin Check එක අලුතින් සිදු කරයි
+    if (!await checkAdminRightsAndUpdate(zanta, from, reply, isGroup, m)) return;
 
+    try {
       reply("*Closing group for members... 🔒*");
-      
-      // Update the group setting to restrict messages to admins only
       await zanta.groupSettingUpdate(from, 'announcement');
-      
       return reply(`*Group successfully closed! Only Admins can send messages now. 🤐✅*`);
       
     } catch (e) {
@@ -44,7 +64,7 @@ cmd(
   }
 );
 
-// --- UNMUTE/OPEN COMMAND (All Members Can Send Messages) ---
+// --- UNMUTE/OPEN COMMAND ---
 cmd(
   {
     pattern: "unmute",
@@ -54,15 +74,13 @@ cmd(
     category: "group",
     filename: __filename,
   },
-  async (zanta, mek, m, { from, reply, isGroup, isBotAdmins, isAdmins }) => {
-    try {
-      if (!checkAdminRights(reply, isGroup, isBotAdmins, isAdmins)) return;
+  async (zanta, mek, m, { from, reply, isGroup, isAdmins }) => {
+    // Admin Check එක අලුතින් සිදු කරයි
+    if (!await checkAdminRightsAndUpdate(zanta, from, reply, isGroup, m)) return;
 
+    try {
       reply("*Opening group for all members... 🔓*");
-      
-      // Update the group setting to allow all members to send messages
       await zanta.groupSettingUpdate(from, 'not_announcement');
-      
       return reply(`*Group successfully opened! All members can send messages now. 💬✅*`);
       
     } catch (e) {
@@ -82,20 +100,14 @@ cmd(
     category: "group",
     filename: __filename,
   },
-  async (zanta, mek, m, { from, reply, isGroup, isBotAdmins, isAdmins }) => {
+  async (zanta, mek, m, { from, reply, isGroup, isAdmins }) => {
+    // Admin Check එක අලුතින් සිදු කරයි
+    // Mute/Unmute මෙන් නොව, Invite සඳහා User Admin වීම අනිවාර්යයෙන් අවශ්‍ය නැත, Bot Admin වීම පමණක් අවශ්‍ය වේ.
+    if (!await checkAdminRightsAndUpdate(zanta, from, reply, isGroup, m)) return;
+
     try {
-      if (!isGroup) {
-        return reply("*This command can only be used in a Group!* 🙁");
-      }
-      
-      // Bot must be an admin to generate the invite link
-      if (!isBotAdmins) {
-        return reply("*I need to be an Admin to generate the invite link!* 🤖❌");
-      }
-      
       reply("*Generating Invite Link... 🔗*");
       
-      // Baileys function to get the group invite code
       const code = await zanta.groupInviteCode(from);
       
       if (!code) {
@@ -112,11 +124,10 @@ cmd(
         { quoted: mek }
       );
       
-      return reply("> *Done✅*");
+      return reply("> *වැඩේ හරි 🙃✅*");
       
     } catch (e) {
       console.error(e);
-      // Catch error if the invite link was recently reset, etc.
       reply(`*Error:* Failed to fetch the invite link. ${e.message || e}`);
     }
   }
