@@ -42,7 +42,7 @@ cmd(
             let menuText = "╭━─━─━─━─━─━─━─━─━╮\n";
             menuText += "┃ 👑 *𝐖𝐄𝐋𝐂𝐎𝐌𝐄 𝐓𝐎 𝐙𝐀𝐍𝐓𝐀-𝐌𝐃* 🤖\n";
             menuText += "┃   _All Available Commands_\n";
-            menuText += "╰━─━─━─━─━─━─━─━─━╯\n\n";
+            menuText += "╰━─━─━─━─━─━─━─━─━╯\n";
 
             // 3. Category සහ Commands එකතු කිරීම
             // 3. Category සහ Commands එකතු කිරීම (මෙම කොටස වෙනස් කළ පසු)
@@ -60,7 +60,7 @@ for (const [cat, cmds] of Object.entries(categories)) {
 }
 
             // 4. Footer එක
-            menuText += "\n\n➖➖➖➖➖➖➖➖➖➖➖➖\n";
+            menuText += "\n➖➖➖➖➖➖➖➖➖➖➖➖\n";
             menuText += "> © 𝟐𝟎𝟐𝟓 | 𝐀𝐤𝐚𝐬𝐡 𝐊𝐚𝐯𝐢𝐧𝐝𝐮\n"; 
             
             // SEND IMAGE + MENU TEXT IN ONE MESSAGE
@@ -79,6 +79,7 @@ for (const [cat, cmds] of Object.entries(categories)) {
         }
     }
 );
+
 
 
 
