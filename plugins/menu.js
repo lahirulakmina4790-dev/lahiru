@@ -56,7 +56,7 @@ cmd(
                 let title = catKey.toUpperCase();
                 if (title === 'OTHER') title = 'GENERAL'; // Revert 'other' back to 'GENERAL' for display
 
-                menuText += `\n╭━━〔 📜 ${title} COMMANDS 〕━━┈⊷\n`;
+                menuText += `\n╭━━〔 📜 ${title}〕━━┈⊷\n`;
 
                 catCommands.forEach(c => {
                     menuText += `│◻${c.pattern}\n`;
@@ -84,3 +84,4 @@ cmd(
         }
     }
 );
+
