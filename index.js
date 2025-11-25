@@ -27,7 +27,7 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 const prefix = '.';
-const ownerNumber = ['94743404814'];
+const ownerNumber = ['94743404814' , '0743404814'];
 const credsPath = path.join(__dirname, '/auth_info_baileys/creds.json');
 
 // Session ID එක වෙනස් නොකරන ලෙස ඔබ කළ ඉල්ලීම පරිදි, MEGA Logic එක මෙහි තබනවා.
