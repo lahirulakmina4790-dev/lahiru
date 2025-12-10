@@ -5,7 +5,7 @@ cmd(
     {
         pattern: "getdp",
         react: "👤",
-        desc: "Get the profile picture (DP) of the user you are chatting with.",
+        desc: "Get the profile picture.",
         category: "general",
         filename: __filename,
     },
