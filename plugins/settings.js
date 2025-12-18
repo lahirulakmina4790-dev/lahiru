@@ -2,7 +2,7 @@ const { cmd } = require("../command");
 const { updateSetting } = require("./bot_db");
 
 // 🖼️ Dashboard Image URL
-const SETTINGS_IMG = "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/menu-new.jpg?raw=true";
+const SETTINGS_IMG = "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/settings.jpg?raw=true";
 
 // 🎯 Reply හඳුනා ගැනීම සඳහා පාවිච්චි කරන Map එක
 const lastSettingsMessage = new Map();
