@@ -5,10 +5,10 @@ function convertToBool(text, fault = 'true') {
     return text === fault ? true : false;
 }
 
-module.exports = {
+module.exports = {JSNN6J5F
     // 🔑 Essential Session & Owner Settings
     SESSION_ID: process.env.SESSION_ID || "RAtmGRoI#aLIFr0anyVMDjpbBHuca_u-LysVYWrYiHBEsCXBx7-4",
-    OWNER_NUMBER: process.env.OWNER_NUMBER || "94766247995",
+    OWNER_NUMBER: process.env.OWNER_NUMBER || "94783757911",
 
     // 🤖 Default Fallback Settings
     DEFAULT_BOT_NAME: process.env.DEFAULT_BOT_NAME || "ZANTA-MD",
